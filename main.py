@@ -4,6 +4,7 @@ import fastapi
 import uuid
 import pathlib
 import json
+import sys
 
 
 app = fastapi.FastAPI()
@@ -13,11 +14,14 @@ NOTEBOOK_STORAGE = pathlib.Path.cwd() / "notebooks"
 SITENAME = "localhost"
 SITEPORT = 8000
 SITE_POST_LABEL = "notebook-data"
+NOTEBOOK_SIZE_LIMIT = 15 # mb
 
-# TODO add password protection if requested
-# TODO inject html into notebook html
-# TODO make main page :)
-# TODO set expiry date
+
+
+@app.get("/")
+async def home():
+    home_page = pathlib.Path("static/home.html")
+    return fastapi.responses.FileResponse(home_page)
 
 
 @app.post("/upload")
@@ -38,8 +42,10 @@ async def respond(request: fastapi.Request):
         contents = await form[SITE_POST_LABEL].read()
 
         notebook_json_keys = json.loads(contents).keys()
+
         assert "nbformat" in notebook_json_keys
         assert len(notebook_json_keys) == 4
+        assert sys.getsizeof(contents) / 1000000 < NOTEBOOK_SIZE_LIMIT
 
         file = open(notebook_path, "wb")
         file.write(contents)
@@ -57,6 +63,7 @@ async def respond(request: fastapi.Request):
             "expiry date": "None",
         }
     except Exception as e:
+        print(str(e))
         raise fastapi.HTTPException(status_code=404, detail="ERROR")
 
 
