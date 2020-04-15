@@ -54,7 +54,7 @@ async def respond(request: fastapi.Request):
         notebook_path.unlink()
         return {
             "status": "success",
-            "path": f"http://{SITENAME}:{SITEPORT}/notebook/{html_path.stem}",
+            "path": f"http://{SITENAME}/notebook/{html_path.stem}",
             "password": "None",
             "expiry date": "None",
         }
