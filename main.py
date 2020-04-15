@@ -1,21 +1,20 @@
 import subprocess
-import secrets
 import fastapi
 import uuid
 import pathlib
 import json
 import sys
+import os
 
 
 app = fastapi.FastAPI()
 security = fastapi.security.HTTPBasic()
 
 NOTEBOOK_STORAGE = pathlib.Path.cwd() / "notebooks"
-SITENAME = "localhost"
-SITEPORT = 8000
+SITENAME = os.environ["SITENAME"]
+SITEPORT = os.environ["SITEPORT"]
 SITE_POST_LABEL = "notebook-data"
-NOTEBOOK_SIZE_LIMIT = 15 # mb
-
+NOTEBOOK_SIZE_LIMIT = 15  # mb
 
 
 @app.get("/")
@@ -38,7 +37,6 @@ async def respond(request: fastapi.Request):
     try:
 
         form = await request.form()
-        filename = form[SITE_POST_LABEL].filename
         contents = await form[SITE_POST_LABEL].read()
 
         notebook_json_keys = json.loads(contents).keys()
@@ -51,9 +49,7 @@ async def respond(request: fastapi.Request):
         file.write(contents)
         file.close()
 
-        converter = subprocess.run(
-            ["jupyter", "nbconvert", notebook_path], capture_output=True
-        )
+        converter = subprocess.run(["jupyter", "nbconvert", notebook_path])
 
         notebook_path.unlink()
         return {
