@@ -20,8 +20,8 @@ NOTEBOOK_SIZE_LIMIT = 15 # mb
 
 @app.get("/")
 async def home():
-    home_page = pathlib.Path("static/home.html")
-    return fastapi.responses.FileResponse(home_page)
+    home_page = pathlib.Path("static/home.html").read_text()
+    return fastapi.responses.HTMLResponse(content=home_page, status_code=200)
 
 
 @app.post("/upload")
