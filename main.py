@@ -66,8 +66,11 @@ async def respond(request: fastapi.Request):
 @app.get("/notebook/{notebook_id}")
 async def read_notebook(notebook_id: str):
     file = pathlib.Path(NOTEBOOK_STORAGE / f"{notebook_id}.html")
+    file_contents = file.read_text()
     if file.is_file():
-        return fastapi.responses.FileResponse(file)
+        return fastapi.responses.HTMLResponse(
+            content=file_contents, status_code=200
+        )
 
     else:
         raise fastapi.HTTPException(
